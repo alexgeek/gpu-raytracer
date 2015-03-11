@@ -1,0 +1,3 @@
+/home/apollo/Projects/opengl-opencl/build/CMakeFiles/glew.dir
+/home/apollo/Projects/opengl-opencl/build/external/glew/src/CMakeFiles/glfw.dir
+/home/apollo/Projects/opengl-opencl/build/CMakeFiles/opengl-boilerplate.dir
