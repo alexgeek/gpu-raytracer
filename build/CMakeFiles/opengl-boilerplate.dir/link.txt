@@ -1,1 +1,0 @@
-/usr/bin/c++       CMakeFiles/opengl-boilerplate.dir/main.cpp.o  -o opengl-boilerplate -rdynamic external/glew/src/libglfw3.a -lX11 -lpthread -lrt -lXrandr -lXinerama -lrt -lm -lXcursor -lGL libglew.a -lX11 -lpthread -lrt -lXrandr -lXinerama -lrt -lXrandr -lXinerama -lm -lXcursor -lGL 

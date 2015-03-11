@@ -1,73 +1,45 @@
-Determining if the pthread_create exist failed with the following output:
-Change Dir: /home/apollo/Projects/opengl-opencl/build/CMakeFiles/CMakeTmp
+Determining if files pthread.h exist failed with the following output:
+Change Dir: C:/Users/AlexanderBrook/ClionProjects/glcl/build/CMakeFiles/CMakeTmp
 
-Run Build Command:/usr/bin/make "cmTryCompileExec285510166/fast"
-/usr/bin/make -f CMakeFiles/cmTryCompileExec285510166.dir/build.make CMakeFiles/cmTryCompileExec285510166.dir/build
-make[1]: Entering directory `/home/apollo/Projects/opengl-opencl/build/CMakeFiles/CMakeTmp'
-/usr/bin/cmake -E cmake_progress_report /home/apollo/Projects/opengl-opencl/build/CMakeFiles/CMakeTmp/CMakeFiles 1
-Building C object CMakeFiles/cmTryCompileExec285510166.dir/CheckSymbolExists.c.o
-/usr/bin/gcc    -o CMakeFiles/cmTryCompileExec285510166.dir/CheckSymbolExists.c.o   -c /home/apollo/Projects/opengl-opencl/build/CMakeFiles/CMakeTmp/CheckSymbolExists.c
-Linking C executable cmTryCompileExec285510166
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec285510166.dir/link.txt --verbose=1
-/usr/bin/gcc         CMakeFiles/cmTryCompileExec285510166.dir/CheckSymbolExists.c.o  -o cmTryCompileExec285510166 -rdynamic 
-CMakeFiles/cmTryCompileExec285510166.dir/CheckSymbolExists.c.o: In function `main':
-CheckSymbolExists.c:(.text+0x16): undefined reference to `pthread_create'
-collect2: error: ld returned 1 exit status
-make[1]: Leaving directory `/home/apollo/Projects/opengl-opencl/build/CMakeFiles/CMakeTmp'
-make[1]: *** [cmTryCompileExec285510166] Error 1
-make: *** [cmTryCompileExec285510166/fast] Error 2
+Run Build Command:"C:/Program Files (x86)/MSBuild/12.0/bin/MSBuild.exe" "cmTryCompileExec1268780747.vcxproj" "/p:Configuration=Debug" "/p:VisualStudioVersion=12.0"
+Microsoft (R) Build Engine version 12.0.31101.0
+[Microsoft .NET Framework, version 4.0.30319.34014]
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Build started 11/03/2015 11:53:10.
+Project "C:\Users\AlexanderBrook\ClionProjects\glcl\build\CMakeFiles\CMakeTmp\cmTryCompileExec1268780747.vcxproj" on node 1 (default targets).
+PrepareForBuild:
+  Creating directory "cmTryCompileExec1268780747.dir\Debug\".
+  Creating directory "C:\Users\AlexanderBrook\ClionProjects\glcl\build\CMakeFiles\CMakeTmp\Debug\".
+  Creating directory "cmTryCompileExec1268780747.dir\Debug\cmTryCom.8717B6C2.tlog\".
+InitializeBuildStatus:
+  Creating "cmTryCompileExec1268780747.dir\Debug\cmTryCom.8717B6C2.tlog\unsuccessfulbuild" because "AlwaysCreate" was specified.
+ClCompile:
+  D:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"cmTryCompileExec1268780747.dir\Debug\\" /Fd"cmTryCompileExec1268780747.dir\Debug\vc120.pdb" /Gd /TC /analyze- /errorReport:queue C:\Users\AlexanderBrook\ClionProjects\glcl\build\CMakeFiles\CMakeTmp\CheckIncludeFiles.c
+  Microsoft (R) C/C++ Optimizing Compiler Version 18.00.31101 for x86
+  Copyright (C) Microsoft Corporation.  All rights reserved.
+  
+  cl /c /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"cmTryCompileExec1268780747.dir\Debug\\" /Fd"cmTryCompileExec1268780747.dir\Debug\vc120.pdb" /Gd /TC /analyze- /errorReport:queue C:\Users\AlexanderBrook\ClionProjects\glcl\build\CMakeFiles\CMakeTmp\CheckIncludeFiles.c
+  
+  CheckIncludeFiles.c
+C:\Users\AlexanderBrook\ClionProjects\glcl\build\CMakeFiles\CMakeTmp\CheckIncludeFiles.c(2): fatal error C1083: Cannot open include file: 'pthread.h': No such file or directory [C:\Users\AlexanderBrook\ClionProjects\glcl\build\CMakeFiles\CMakeTmp\cmTryCompileExec1268780747.vcxproj]
+Done Building Project "C:\Users\AlexanderBrook\ClionProjects\glcl\build\CMakeFiles\CMakeTmp\cmTryCompileExec1268780747.vcxproj" (default targets) -- FAILED.
+
+Build FAILED.
+
+"C:\Users\AlexanderBrook\ClionProjects\glcl\build\CMakeFiles\CMakeTmp\cmTryCompileExec1268780747.vcxproj" (default target) (1) ->
+(ClCompile target) -> 
+  C:\Users\AlexanderBrook\ClionProjects\glcl\build\CMakeFiles\CMakeTmp\CheckIncludeFiles.c(2): fatal error C1083: Cannot open include file: 'pthread.h': No such file or directory [C:\Users\AlexanderBrook\ClionProjects\glcl\build\CMakeFiles\CMakeTmp\cmTryCompileExec1268780747.vcxproj]
+
+    0 Warning(s)
+    1 Error(s)
+
+Time Elapsed 00:00:00.48
 
-File /home/apollo/Projects/opengl-opencl/build/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+Source:
 /* */
 #include <pthread.h>
 
-int main(int argc, char** argv)
-{
-  (void)argv;
-#ifndef pthread_create
-  return ((int*)(&pthread_create))[argc];
-#else
-  (void)argc;
-  return 0;
-#endif
-}
 
-Determining if the function pthread_create exists in the pthreads failed with the following output:
-Change Dir: /home/apollo/Projects/opengl-opencl/build/CMakeFiles/CMakeTmp
-
-Run Build Command:/usr/bin/make "cmTryCompileExec2668703169/fast"
-/usr/bin/make -f CMakeFiles/cmTryCompileExec2668703169.dir/build.make CMakeFiles/cmTryCompileExec2668703169.dir/build
-make[1]: Entering directory `/home/apollo/Projects/opengl-opencl/build/CMakeFiles/CMakeTmp'
-/usr/bin/cmake -E cmake_progress_report /home/apollo/Projects/opengl-opencl/build/CMakeFiles/CMakeTmp/CMakeFiles 1
-Building C object CMakeFiles/cmTryCompileExec2668703169.dir/CheckFunctionExists.c.o
-/usr/bin/gcc   -DCHECK_FUNCTION_EXISTS=pthread_create   -o CMakeFiles/cmTryCompileExec2668703169.dir/CheckFunctionExists.c.o   -c /usr/share/cmake-2.8/Modules/CheckFunctionExists.c
-Linking C executable cmTryCompileExec2668703169
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec2668703169.dir/link.txt --verbose=1
-/usr/bin/gcc     -DCHECK_FUNCTION_EXISTS=pthread_create    CMakeFiles/cmTryCompileExec2668703169.dir/CheckFunctionExists.c.o  -o cmTryCompileExec2668703169 -rdynamic -lpthreads 
-/usr/bin/ld: cannot find -lpthreads
-collect2: error: ld returned 1 exit status
-make[1]: Leaving directory `/home/apollo/Projects/opengl-opencl/build/CMakeFiles/CMakeTmp'
-make[1]: *** [cmTryCompileExec2668703169] Error 1
-make: *** [cmTryCompileExec2668703169/fast] Error 2
-
-
-Determining if the function glXGetProcAddressEXT exists failed with the following output:
-Change Dir: /home/apollo/Projects/opengl-opencl/build/CMakeFiles/CMakeTmp
-
-Run Build Command:/usr/bin/make "cmTryCompileExec3098805939/fast"
-/usr/bin/make -f CMakeFiles/cmTryCompileExec3098805939.dir/build.make CMakeFiles/cmTryCompileExec3098805939.dir/build
-make[1]: Entering directory `/home/apollo/Projects/opengl-opencl/build/CMakeFiles/CMakeTmp'
-/usr/bin/cmake -E cmake_progress_report /home/apollo/Projects/opengl-opencl/build/CMakeFiles/CMakeTmp/CMakeFiles 1
-Building C object CMakeFiles/cmTryCompileExec3098805939.dir/CheckFunctionExists.c.o
-/usr/bin/gcc   -DCHECK_FUNCTION_EXISTS=glXGetProcAddressEXT   -o CMakeFiles/cmTryCompileExec3098805939.dir/CheckFunctionExists.c.o   -c /usr/share/cmake-2.8/Modules/CheckFunctionExists.c
-Linking C executable cmTryCompileExec3098805939
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec3098805939.dir/link.txt --verbose=1
-/usr/bin/gcc     -DCHECK_FUNCTION_EXISTS=glXGetProcAddressEXT    CMakeFiles/cmTryCompileExec3098805939.dir/CheckFunctionExists.c.o  -o cmTryCompileExec3098805939 -rdynamic -lGL 
-CMakeFiles/cmTryCompileExec3098805939.dir/CheckFunctionExists.c.o: In function `main':
-CheckFunctionExists.c:(.text+0x15): undefined reference to `glXGetProcAddressEXT'
-collect2: error: ld returned 1 exit status
-make[1]: Leaving directory `/home/apollo/Projects/opengl-opencl/build/CMakeFiles/CMakeTmp'
-make[1]: *** [cmTryCompileExec3098805939] Error 1
-make: *** [cmTryCompileExec3098805939/fast] Error 2
-
+int main(void){return 0;}
 
