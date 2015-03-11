@@ -36,16 +36,11 @@ int main(void) {
   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
   glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
-  puts("foo");
-
   window = glfwCreateWindow(640, 480, "OpenGL Boilerplate", NULL, NULL);
   if (!window) {
-    puts("##################");
     glfwTerminate();
     exit(EXIT_FAILURE);
   }
-
-  puts("---------------");
 
   glewExperimental = GL_TRUE;
   glewInit();
