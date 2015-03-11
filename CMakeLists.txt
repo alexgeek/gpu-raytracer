@@ -1,5 +1,11 @@
 cmake_minimum_required(VERSION 2.8)
 
+find_package(OpenCL)
+message(STATUS "OpenCL found: ${OPENCL_FOUND}")
+message(STATUS "OpenCL includes: ${OPENCL_INCLUDE_DIRS}")
+message(STATUS "OpenCL CXX includes: ${OPENCL_HAS_CPP_BINDINGS}")
+message(STATUS "OpenCL libraries: ${OPENCL_LIBRARIES}")
+
 set(GLFW_SOURCE_DIR "external/glfw")
 set(GLM_SOURCE_DIR "external/glm")
 set(GLEW_SOURCE_DIR "external/glew")
@@ -13,7 +19,8 @@ set(GLFW_INSTALL OFF CACHE BOOL "")
 
 add_subdirectory(${GLFW_SOURCE_DIR} ${GLEW_SOURCE_DIR})
 
-include_directories(${GLFW_SOURCE_DIR}/include
+include_directories(${OPENCL_INCLUDE_DIRS}
+                    ${GLFW_SOURCE_DIR}/include
                     ${GLFW_SOURCE_DIR}/deps
                     ${GLM_SOURCE_DIR}
                     ${GLEW_SOURCE_DIR}/include)
@@ -30,7 +37,7 @@ add_definitions(
 )
 
 add_executable("opengl-boilerplate" main.cpp)
-target_link_libraries("opengl-boilerplate" glfw ${GLFW_LIBRARIES} glew)
+target_link_libraries("opengl-boilerplate" ${OPENCL_LIBRARIES} glfw ${GLFW_LIBRARIES} glew)
 
 if (APPLE)
   set(APP_NAME "OpenGL Boilerplate")
