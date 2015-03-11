@@ -49,6 +49,7 @@ void cl_info() {
 * Selects CL platform/device capable of CL/GL interop.
 */
 void cl_select(cl_platform_id* platform_id, cl_device_id* device_id) {
+    cl_int err;
     int i;
     char* info;
     size_t infoSize;
@@ -56,11 +57,13 @@ void cl_select(cl_platform_id* platform_id, cl_device_id* device_id) {
     cl_platform_id *platforms;
 
     // get platform count
-    clGetPlatformIDs(5, NULL, &platformCount);
+    err = clGetPlatformIDs(5, NULL, &platformCount);
+    CHECK_ERR(err);
 
     // get all platforms
     platforms = (cl_platform_id*) malloc(sizeof(cl_platform_id) * platformCount);
-    clGetPlatformIDs(platformCount, platforms, NULL);
+    err = clGetPlatformIDs(platformCount, platforms, NULL);
+    CHECK_ERR(err);
 
     // for each platform print all attributes
     for (i = 0; i < platformCount; i++) {
@@ -68,36 +71,44 @@ void cl_select(cl_platform_id* platform_id, cl_device_id* device_id) {
         printf("%d. Checking Platform \n", i+1);
 
         // get platform attribute value size
-        clGetPlatformInfo(platforms[i], CL_PLATFORM_EXTENSIONS, 0, NULL, &infoSize);
+        err = clGetPlatformInfo(platforms[i], CL_PLATFORM_EXTENSIONS, 0, NULL, &infoSize);
+        CHECK_ERR(err);
         info = (char*) malloc(infoSize);
 
         // get platform attribute value
-        clGetPlatformInfo(platforms[i], CL_PLATFORM_EXTENSIONS, infoSize, info, NULL);
+        err = clGetPlatformInfo(platforms[i], CL_PLATFORM_EXTENSIONS, infoSize, info, NULL);
+        CHECK_ERR(err);
 
         if(strstr(info, GL_SHARING_EXTENSION) != NULL) {
             cl_uint num_devices;
             cl_device_id* devices;
 
             // Get the number of GPU devices available to the platform
-            clGetDeviceIDs(platforms[i], CL_DEVICE_TYPE_GPU, 0, NULL, &num_devices);
+            err = clGetDeviceIDs(platforms[i], CL_DEVICE_TYPE_GPU, 0, NULL, &num_devices);
+            CHECK_ERR(err);
 
             // Create the device list
             devices = new cl_device_id [num_devices];
-            clGetDeviceIDs(platforms[i], CL_DEVICE_TYPE_GPU, num_devices, devices, NULL);
+            err  = clGetDeviceIDs(platforms[i], CL_DEVICE_TYPE_GPU, num_devices, devices, NULL);
+            CHECK_ERR(err);
 
             int d;
             for(d = 0; d < num_devices; d++) {
 
                 // get device attribute value size
                 size_t extensionSize;
-                clGetDeviceInfo(devices[d], CL_DEVICE_EXTENSIONS, 0, NULL, &extensionSize );
+                err = clGetDeviceInfo(devices[d], CL_DEVICE_EXTENSIONS, 0, NULL, &extensionSize );
+                CHECK_ERR(err);
 
                 if(extensionSize > 0) {
                     char* extensions = (char*)malloc(extensionSize);
-                    clGetDeviceInfo(devices[d], CL_DEVICE_EXTENSIONS, extensionSize, extensions, &extensionSize);
+                    err = clGetDeviceInfo(devices[d], CL_DEVICE_EXTENSIONS, extensionSize, extensions, &extensionSize);
+                    CHECK_ERR(err);
 
                     if(strstr(info, GL_SHARING_EXTENSION) != NULL) {
-                        printf("Found Compatible platform.\n");
+                        printf("Found Compatible platform %d and device %d out of %d .\n", i, d, num_devices);
+                        *platform_id = platforms[i];
+                        *device_id = devices[d];
                     }
 
                     free(extensions);
@@ -112,4 +123,132 @@ void cl_select(cl_platform_id* platform_id, cl_device_id* device_id) {
     }
 
     free(platforms);
+}
+
+void cl_select_context(cl_platform_id* platform, cl_device_id* device, cl_context* context) {
+    cl_int err;
+#if defined (__APPLE__)
+    CGLContextObj kCGLContext = CGLGetCurrentContext();
+    CGLShareGroupObj kCGLShareGroup = CGLGetShareGroup(kCGLContext);
+    cl_context_properties props[] =
+    {
+        CL_CONTEXT_PROPERTY_USE_CGL_SHAREGROUP_APPLE, (cl_context_properties)kCGLShareGroup,
+        0
+    };
+    *context = clCreateContext(props, 0,0, NULL, NULL, &err);
+#else
+    #ifdef UNIX
+    cl_context_properties props[] =
+    {
+        CL_GL_CONTEXT_KHR, (cl_context_properties)glXGetCurrentContext(),
+        CL_GLX_DISPLAY_KHR, (cl_context_properties)glXGetCurrentDisplay(),
+        CL_CONTEXT_PLATFORM, (cl_context_properties)platform,
+        0
+    };
+    *context = clCreateContext(props, 1, &cdDevices[uiDeviceUsed], NULL, NULL, &err);
+    #else // Win32
+    cl_context_properties props[] =
+    {
+        CL_GL_CONTEXT_KHR, (cl_context_properties)wglGetCurrentContext(),
+        CL_WGL_HDC_KHR, (cl_context_properties)wglGetCurrentDC(),
+        CL_CONTEXT_PLATFORM, (cl_context_properties)*platform,
+        0
+    };
+    *context = clCreateContext(props, 1, device, NULL, NULL, &err);
+    CHECK_ERR(err);
+#endif
+#endif
+}
+
+void cl_load_kernel(cl_context* context, cl_device_id* device, const char* source, cl_command_queue* command_queue, cl_kernel* kernel) {
+    cl_mem memobj;
+    cl_int err;
+    cl_program program;
+    char string[MEM_SIZE];
+
+    FILE *fp;
+    char *source_str;
+    size_t source_size;
+
+    /* Load the source code containing the kernel*/
+    fp = fopen(source, "r");
+    if (!fp) {
+        fprintf(stderr, "Failed to load kernel.\n");
+        exit(1);
+    }
+    source_str = (char *) malloc(MAX_SOURCE_SIZE);
+    source_size = fread(source_str, 1, MAX_SOURCE_SIZE, fp);
+    fclose(fp);
+
+    //printf("SOURCE:\n%s\n", source_str);
+
+    // create a command queue
+    *command_queue = clCreateCommandQueue(*context, *device, 0, &err);
+    CHECK_ERR(err);
+
+
+    memobj = clCreateBuffer(*context, CL_MEM_READ_WRITE, MEM_SIZE * sizeof(char), NULL, &err);
+    CHECK_ERR(err);
+
+    /* Create Kernel Program from the sour
+    ce */
+    program = clCreateProgramWithSource(*context, 1, (const char **) &source_str,
+            (const size_t *) &source_size, &err);
+    CHECK_ERR(err);
+
+
+    /* Build Kernel Program */
+    err = clBuildProgram(program, 1, device, NULL, NULL, NULL);
+    CHECK_ERR(err);
+
+    /* Create OpenCL Kernel */
+    *kernel = clCreateKernel(program, "sine_wave", &err);
+    CHECK_ERR(err);
+}
+
+void cl_set_constant_args(cl_kernel * kernel, cl_mem* vbo_cl, unsigned int width, unsigned int height) {
+    cl_int err;
+    err = clSetKernelArg(*kernel, 0, sizeof(cl_mem), (void*)vbo_cl);
+    CHECK_ERR(err);
+    err = clSetKernelArg(*kernel, 1,  sizeof(unsigned int), &width);
+    CHECK_ERR(err);
+    err = clSetKernelArg(*kernel, 2,  sizeof(unsigned int), &height);
+    CHECK_ERR(err);
+}
+
+void cl_vbo(cl_context * context, GLuint* vbo, cl_mem* vbo_cl, unsigned int width, unsigned int height) {
+    cl_int err;
+    // create VBO
+    unsigned int size = width * height * 4 * sizeof(float);
+    // create buffer object
+    glGenBuffers(1, vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, *vbo);
+
+    // initialize buffer object
+    glBufferData(GL_ARRAY_BUFFER, size, 0, GL_DYNAMIC_DRAW);
+
+    // create a CL buffer from the vbo
+    *vbo_cl = clCreateFromGLBuffer(*context, CL_MEM_WRITE_ONLY, *vbo, &err);
+    CHECK_ERR(err);
+}
+
+float anim = 0;
+void cl_run_kernel(cl_command_queue* command_queue, cl_kernel* kernel, cl_mem* vbo_cl, unsigned int width, unsigned int height) {
+    cl_int err;
+    // map OpenGL buffer object for writing from OpenCL
+    //glFinish();
+    err = clEnqueueAcquireGLObjects(*command_queue, 1, vbo_cl, 0,0,0);
+    CHECK_ERR(err);
+
+    // Set arg 3 and execute the kernel
+    size_t work[] = {width, height};
+    anim = (anim + 0.01);
+    err = clSetKernelArg(*kernel, 3, sizeof(float), &anim);
+    CHECK_ERR(err);
+    err = clEnqueueNDRangeKernel(*command_queue, *kernel, 2, NULL, work, NULL, 0,0,0 );
+    CHECK_ERR(err);
+
+    err = clEnqueueReleaseGLObjects(*command_queue, 1, vbo_cl, 0,0,0);
+    CHECK_ERR(err);
+    clFinish(*command_queue);
 }
