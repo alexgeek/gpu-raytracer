@@ -1,5 +1,0 @@
-C:/Users/AlexanderBrook/ClionProjects/glcl/build/CMakeFiles/opengl-boilerplate.dir
-C:/Users/AlexanderBrook/ClionProjects/glcl/build/CMakeFiles/ALL_BUILD.dir
-C:/Users/AlexanderBrook/ClionProjects/glcl/build/CMakeFiles/ZERO_CHECK.dir
-C:/Users/AlexanderBrook/ClionProjects/glcl/build/CMakeFiles/glew.dir
-C:/Users/AlexanderBrook/ClionProjects/glcl/build/external/glew/src/CMakeFiles/glfw.dir
