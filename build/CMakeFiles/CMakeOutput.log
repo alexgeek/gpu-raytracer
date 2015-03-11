@@ -247,3 +247,56 @@ Build succeeded.
 Time Elapsed 00:00:00.88
 
 
+Determining if the CL_VERSION_1_2 exist passed with the following output:
+Change Dir: C:/Users/AlexanderBrook/ClionProjects/glcl/build/CMakeFiles/CMakeTmp
+
+Run Build Command:"C:/Program Files (x86)/MSBuild/12.0/bin/MSBuild.exe" "cmTryCompileExec1486479236.vcxproj" "/p:Configuration=Debug" "/p:VisualStudioVersion=12.0"
+Microsoft (R) Build Engine version 12.0.31101.0
+[Microsoft .NET Framework, version 4.0.30319.34014]
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Build started 11/03/2015 17:24:30.
+Project "C:\Users\AlexanderBrook\ClionProjects\glcl\build\CMakeFiles\CMakeTmp\cmTryCompileExec1486479236.vcxproj" on node 1 (default targets).
+PrepareForBuild:
+  Creating directory "cmTryCompileExec1486479236.dir\Debug\".
+  Creating directory "C:\Users\AlexanderBrook\ClionProjects\glcl\build\CMakeFiles\CMakeTmp\Debug\".
+  Creating directory "cmTryCompileExec1486479236.dir\Debug\cmTryCom.C6A19482.tlog\".
+InitializeBuildStatus:
+  Creating "cmTryCompileExec1486479236.dir\Debug\cmTryCom.C6A19482.tlog\unsuccessfulbuild" because "AlwaysCreate" was specified.
+ClCompile:
+  D:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /I"C:\Program Files (x86)\AMD APP SDK\2.9-1\include" /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"cmTryCompileExec1486479236.dir\Debug\\" /Fd"cmTryCompileExec1486479236.dir\Debug\vc120.pdb" /Gd /TC /analyze- /errorReport:queue C:\Users\AlexanderBrook\ClionProjects\glcl\build\CMakeFiles\CMakeTmp\CheckSymbolExists.c
+  Microsoft (R) C/C++ Optimizing Compiler Version 18.00.31101 for x86
+  Copyright (C) Microsoft Corporation.  All rights reserved.
+  
+  cl /c /I"C:\Program Files (x86)\AMD APP SDK\2.9-1\include" /Zi /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"cmTryCompileExec1486479236.dir\Debug\\" /Fd"cmTryCompileExec1486479236.dir\Debug\vc120.pdb" /Gd /TC /analyze- /errorReport:queue C:\Users\AlexanderBrook\ClionProjects\glcl\build\CMakeFiles\CMakeTmp\CheckSymbolExists.c
+  
+  CheckSymbolExists.c
+Link:
+  D:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:QUEUE /OUT:"C:\Users\AlexanderBrook\ClionProjects\glcl\build\CMakeFiles\CMakeTmp\Debug\cmTryCompileExec1486479236.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:/Users/AlexanderBrook/ClionProjects/glcl/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec1486479236.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:/Users/AlexanderBrook/ClionProjects/glcl/build/CMakeFiles/CMakeTmp/Debug/cmTryCompileExec1486479236.lib" /MACHINE:X86 /SAFESEH  /machine:X86 /debug cmTryCompileExec1486479236.dir\Debug\CheckSymbolExists.obj
+  cmTryCompileExec1486479236.vcxproj -> C:\Users\AlexanderBrook\ClionProjects\glcl\build\CMakeFiles\CMakeTmp\Debug\cmTryCompileExec1486479236.exe
+FinalizeBuildStatus:
+  Deleting file "cmTryCompileExec1486479236.dir\Debug\cmTryCom.C6A19482.tlog\unsuccessfulbuild".
+  Touching "cmTryCompileExec1486479236.dir\Debug\cmTryCom.C6A19482.tlog\cmTryCompileExec1486479236.lastbuildstate".
+Done Building Project "C:\Users\AlexanderBrook\ClionProjects\glcl\build\CMakeFiles\CMakeTmp\cmTryCompileExec1486479236.vcxproj" (default targets).
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.02
+
+File C:/Users/AlexanderBrook/ClionProjects/glcl/build/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <C:/Program Files (x86)/AMD APP SDK/2.9-1/include/CL/cl.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef CL_VERSION_1_2
+  return ((int*)(&CL_VERSION_1_2))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+

@@ -6,9 +6,18 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 
-using namespace glm;
+#ifdef __APPLE__
+#include <OpenCL/opencl.h>
+#else
+#include <CL/cl.h>
+#endif
 
-#define GLSL(src) #src
+#define MEM_SIZE (128)
+#define MAX_SOURCE_SIZE (0x100000)
+
+#include "compute.h"
+
+using namespace glm;
 
 static void error_callback(int error, const char *description) {
   fputs(description, stderr);
@@ -45,7 +54,14 @@ int main(void) {
   glewExperimental = GL_TRUE;
   glewInit();
 
-  puts("bar");
+  // CL
+
+  cl_platform_id pid;
+  cl_device_id  did;
+  cl_info();
+  cl_select(&pid, &did);
+
+  // END CL
 
   glfwMakeContextCurrent(window);
 

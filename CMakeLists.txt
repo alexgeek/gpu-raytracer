@@ -36,8 +36,8 @@ add_definitions(
   -DGLEW_STATIC
 )
 
-add_executable("opengl-boilerplate" main.cpp)
-target_link_libraries("opengl-boilerplate" ${OPENCL_LIBRARIES} glfw ${GLFW_LIBRARIES} glew)
+add_executable("opengl-boilerplate" main.cpp compute.cpp)
+target_link_libraries("opengl-boilerplate" glfw ${GLFW_LIBRARIES} glew ${OPENCL_LIBRARIES})
 
 if (APPLE)
   set(APP_NAME "OpenGL Boilerplate")
