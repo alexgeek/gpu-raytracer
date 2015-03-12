@@ -10,6 +10,8 @@
 #include <OpenCL/opencl.h>
 #else
 #include <CL/cl.h>
+#include <d3drm.h>
+
 #endif
 
 #define MEM_SIZE (128)
@@ -19,14 +21,14 @@
 
 using namespace glm;
 
-GLuint vbo;
+GLuint texture;
 unsigned int width = 256;
 unsigned int height = 256;
 const unsigned int window_width = 512;
 const unsigned int window_height = 512;
 
 // CL
-cl_mem vbo_cl;
+cl_mem texture_cl;
 cl_platform_id pid;
 cl_device_id  did;
 cl_context context;
@@ -43,25 +45,25 @@ static void key_callback(GLFWwindow *window, int key, int scancode, int action, 
 }
 
 static void render(GLFWwindow *window) {
-  cl_run_kernel(&command_queue, &kernel, &vbo_cl, width, height);
+  // run the ray tracing kernel
+  cl_run_kernel(&command_queue, &kernel, &texture_cl, width, height);
 
-  // check for OpenGL errors
-  GLenum err;
-  while ((err = glGetError()) != GL_NO_ERROR)
-    printf("CLGL error: %d\n", err);
-
-  // clear graphics then render from the vbo
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  glBindBuffer(GL_ARRAY_BUFFER, vbo);
-  glVertexPointer(4, GL_FLOAT, 0, 0);
-  glEnableClientState(GL_VERTEX_ARRAY);
-  glColor3f(1.0, 0.0, 0.0);
-  glDrawArrays(GL_POINTS, 0, width * height);
-  glDisableClientState(GL_VERTEX_ARRAY);
 
-  // check for OpenGL errors
-  while ((err = glGetError()) != GL_NO_ERROR)
-    printf("OpenGL error: %d\n", err);
+  CHECK_GL(glBindTexture(GL_TEXTURE_2D, texture));
+  glBegin(GL_QUADS);
+  glTexCoord2f(0.0f, 0.0f);
+  glVertex3f(-1.0f, -1.0f, 0.1f);
+
+  glTexCoord2f(1.0f, 0.0f);
+  glVertex3f(1.0f, -1.0f, 0.1f);
+
+  glTexCoord2f(1.0f, 1.0f);
+  glVertex3f(1.0f, 1.0f, 0.1f);
+
+  glTexCoord2f(0.0f, 1.0f);
+  glVertex3f(-1.0f, 1.0f, 0.1f);
+  glEnd();
 }
 
 void glPerspective(double fov, double aspectRatio, double znear, double zfar)
@@ -76,7 +78,9 @@ void init_gl()
 {
   // default initialization
   glClearColor(0.0, 0.0, 0.0, 1.0);
-  glDisable(GL_DEPTH_TEST);
+  CHECK_GL(glDisable(GL_DEPTH_TEST));
+  CHECK_GL(glDisable(GL_LIGHTING));
+  CHECK_GL(glEnable(GL_TEXTURE_2D));
 
   // viewport
   glViewport(0, 0, window_width, window_height);
@@ -84,8 +88,6 @@ void init_gl()
   // projection
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  //glOrtho(<#(GLdouble)left#>, <#(GLdouble)right#>, <#(GLdouble)bottom#>, <#(GLdouble)top#>, <#(GLdouble)zNear#>, <#(GLdouble)zFar#>)
-  //gluPerspective(60.0, (GLfloat)window_width / (GLfloat) window_height, 0.1, 10.0);
   glPerspective(60.0, window_width/window_height, 0.1, 10.0);
 
   // set view matrix
@@ -137,8 +139,8 @@ int main(void) {
   cl_select(&pid, &did);
   cl_select_context(&pid, &did, &context);
   cl_load_kernel(&context, &did, "./trace.cl", &command_queue, &kernel);
-  cl_vbo(&context, &vbo, &vbo_cl, width, height);
-  cl_set_constant_args(&kernel, &vbo_cl, width, height);
+  cl_create_texture(&context, &texture, &texture_cl, width, height);
+  cl_set_constant_args(&kernel, &texture_cl, width, height);
   // END CL
 
   glfwSetKeyCallback(window, key_callback);

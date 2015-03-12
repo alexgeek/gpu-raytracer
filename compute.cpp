@@ -1,4 +1,3 @@
-#include <d3d.h>
 #include "compute.h"
 
 void cl_info() {
@@ -215,9 +214,9 @@ void cl_load_kernel(cl_context* context, cl_device_id* device, const char* sourc
     CHECK_ERR(err);
 }
 
-void cl_set_constant_args(cl_kernel * kernel, cl_mem* vbo_cl, unsigned int width, unsigned int height) {
+void cl_set_constant_args(cl_kernel * kernel, cl_mem* cl_texture, unsigned int width, unsigned int height) {
     cl_int err;
-    err = clSetKernelArg(*kernel, 0, sizeof(cl_mem), (void*)vbo_cl);
+    err = clSetKernelArg(*kernel, 0, sizeof(cl_mem), (void*)cl_texture);
     CHECK_ERR(err);
     err = clSetKernelArg(*kernel, 1,  sizeof(unsigned int), &width);
     CHECK_ERR(err);
@@ -225,28 +224,32 @@ void cl_set_constant_args(cl_kernel * kernel, cl_mem* vbo_cl, unsigned int width
     CHECK_ERR(err);
 }
 
-void cl_vbo(cl_context * context, GLuint* vbo, cl_mem* vbo_cl, unsigned int width, unsigned int height) {
+void cl_create_texture(cl_context *context, GLuint *texture, cl_mem *cl_texture, unsigned int width, unsigned int height) {
     cl_int err;
-    // create VBO
-    unsigned int size = width * height * 4 * sizeof(float);
-    // create buffer object
-    glGenBuffers(1, vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, *vbo);
 
-    // initialize buffer object
-    glBufferData(GL_ARRAY_BUFFER, size, 0, GL_DYNAMIC_DRAW);
+    CHECK_GL(glGenTextures(1, texture));
+
+    CHECK_GL(glBindTexture(GL_TEXTURE_2D, *texture));
+
+    CHECK_GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
+    CHECK_GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
+    //need to set GL_NEAREST (not GL_NEAREST_MIPMAP_* which would cause CL_INVALID_GL_OBJECT later)
+    CHECK_GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+    CHECK_GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+    //specify texture dimensions, format etc
+    CHECK_GL(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0));
 
     // create a CL buffer from the vbo
-    *vbo_cl = clCreateFromGLBuffer(*context, CL_MEM_WRITE_ONLY, *vbo, &err);
+    *cl_texture = clCreateFromGLTexture2D(*context, CL_MEM_WRITE_ONLY, GL_TEXTURE_2D, 0, *texture, &err);
     CHECK_ERR(err);
 }
 
 float anim = 0;
-void cl_run_kernel(cl_command_queue* command_queue, cl_kernel* kernel, cl_mem* vbo_cl, unsigned int width, unsigned int height) {
+void cl_run_kernel(cl_command_queue* command_queue, cl_kernel* kernel, cl_mem*texture_cl, unsigned int width, unsigned int height) {
     cl_int err;
     // map OpenGL buffer object for writing from OpenCL
     //glFinish();
-    err = clEnqueueAcquireGLObjects(*command_queue, 1, vbo_cl, 0,0,0);
+    err = clEnqueueAcquireGLObjects(*command_queue, 1, texture_cl, 0,0,0);
     CHECK_ERR(err);
 
     // Set arg 3 and execute the kernel
@@ -258,7 +261,7 @@ void cl_run_kernel(cl_command_queue* command_queue, cl_kernel* kernel, cl_mem* v
     err = clEnqueueNDRangeKernel(*command_queue, *kernel, 2, NULL, work, NULL, 0,0,0 );
     CHECK_ERR(err);
 
-    err = clEnqueueReleaseGLObjects(*command_queue, 1, vbo_cl, 0,0,0);
+    err = clEnqueueReleaseGLObjects(*command_queue, 1, texture_cl, 0,0,0);
     CHECK_ERR(err);
 
     err = clFinish(*command_queue);

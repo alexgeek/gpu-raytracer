@@ -49,11 +49,12 @@ int ray_trace(Ray* ray, Plane* planes) {
     return 0;
 }
 
-__kernel void sine_wave(__global float4* pos, unsigned int width, unsigned int height, float time)
+__kernel void sine_wave(__write_only image2d_t img, unsigned int width, unsigned int height, float time)
 {
     unsigned int x = get_global_id(0);
     unsigned int y = get_global_id(1);
 
+    /*
     // calculate uv coordinates
     float u = x / (float) width;
     float v = y / (float) height;
@@ -76,19 +77,9 @@ __kernel void sine_wave(__global float4* pos, unsigned int width, unsigned int h
     planes[1].intensity = (float4)(0,0,0,0);
     planes[1].normal = (float4)(0,-1.0f,0,0);
 
-    ray_trace(&ray, &planes);
+    ray_trace(&ray, &planes);*/
 
-    u = u*2.0f - 1.0f;
-    v = v*2.0f - 1.0f;
-
-    // calculate simple sine wave pattern
-    float freq = 4.0f;
-    float w = sin(u*freq + time) * cos(v*freq + time) * 0.5f;
-
-    // write output vertex
-    pos[y*width+x] = (float4)(u, w, v, 1.0f);
-    pos[y*width+x] = (float4)(0.5f, 0.5f, 0.8f, 1.0f);
-
-
+    float4 col = (float4)(0.5f, 0.5f * sin(time), 0.8f, 1.0f);
+    write_imagef(img, (int2)(x, y), col);
 }
 

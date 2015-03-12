@@ -33,15 +33,17 @@ extern "C" {
 
 #include <CL/cl_gl.h>
 
-#define CHECK_ERR(E) if(E != CL_SUCCESS) fprintf (stderr, "CL ERROR %d in %s:%d\n", E,__FILE__, __LINE__);
+#define CHECK_ERR(E) if(E != CL_SUCCESS) fprintf (stderr, "CL ERROR (%d) in %s:%d\n", E,__FILE__, __LINE__);
+#define CHECK_GL(C) C; do {GLenum glerr = glGetError(); if(glerr != GL_NO_ERROR) printf("GL ERROR (%d) in %s:%d\n", glerr, __FILE__, __LINE__);} while(0)
 
 void cl_info();
 void cl_select(cl_platform_id* platform_id, cl_device_id* device_id);
 void cl_select_context(cl_platform_id* platform, cl_device_id* device, cl_context* context);
 void cl_load_kernel(cl_context* context, cl_device_id* device, const char* source, cl_command_queue* command_queue, cl_kernel* kernel);
-void cl_set_constant_args(cl_kernel * kernel, cl_mem* vbo_cl, unsigned int width, unsigned int height);
-void cl_vbo(cl_context * context, GLuint* vbo, cl_mem* vbo_cl, unsigned int width, unsigned int height);
-void cl_run_kernel(cl_command_queue* command_queue, cl_kernel* kernel, cl_mem* vbo_cl, unsigned int width, unsigned int height);
+void cl_set_constant_args(cl_kernel * kernel, cl_mem* texture, unsigned int width, unsigned int height);
+void cl_create_texture(cl_context* context, GLuint* texture, cl_mem* cl_texture, unsigned int width, unsigned int height);
+void cl_run_kernel(cl_command_queue* command_queue, cl_kernel* kernel, cl_mem*texture_cl, unsigned int width, unsigned int height);
+
 #ifdef __cplusplus
 }
 #endif
