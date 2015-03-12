@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
+project(tracer)
 
 find_package(OpenCL)
 message(STATUS "OpenCL found: ${OPENCL_FOUND}")
@@ -36,8 +37,8 @@ add_definitions(
   -DGLEW_STATIC
 )
 
-add_executable("opengl-boilerplate" main.cpp compute.cpp)
-target_link_libraries("opengl-boilerplate" glfw ${GLFW_LIBRARIES} glew ${OPENCL_LIBRARIES})
+add_executable(${PROJECT_NAME} main.cpp compute.cpp)
+target_link_libraries(${PROJECT_NAME} glfw ${GLFW_LIBRARIES} glew ${OPENCL_LIBRARIES})
 
 if (APPLE)
   set(APP_NAME "OpenGL Boilerplate")
@@ -57,3 +58,7 @@ if (APPLE)
   set_target_properties(${APP_NAME} PROPERTIES MACOSX_BUNDLE_LONG_VERSION_STRING "1.0")
   set_target_properties(${APP_NAME} PROPERTIES MACOSX_BUNDLE_INFO_STRING "OpenGL boilerplate example app")
 endif()
+
+add_custom_command(TARGET ${PROJECT_NAME} PRE_BUILD
+                   COMMAND ${CMAKE_COMMAND} -E copy_directory
+                   ${CMAKE_SOURCE_DIR}/kernels $<TARGET_FILE_DIR:${PROJECT_NAME}>)

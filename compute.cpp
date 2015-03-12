@@ -1,3 +1,4 @@
+#include <d3d.h>
 #include "compute.h"
 
 void cl_info() {
@@ -180,8 +181,6 @@ void cl_load_kernel(cl_context* context, cl_device_id* device, const char* sourc
     source_size = fread(source_str, 1, MAX_SOURCE_SIZE, fp);
     fclose(fp);
 
-    //printf("SOURCE:\n%s\n", source_str);
-
     // create a command queue
     *command_queue = clCreateCommandQueue(*context, *device, 0, &err);
     CHECK_ERR(err);
@@ -199,7 +198,17 @@ void cl_load_kernel(cl_context* context, cl_device_id* device, const char* sourc
 
     /* Build Kernel Program */
     err = clBuildProgram(program, 1, device, NULL, NULL, NULL);
-    CHECK_ERR(err);
+    if(err != CL_SUCCESS) {
+        size_t len;
+        cl_build_status build_status;
+        char buffer[204800];
+        err = clGetProgramBuildInfo(program, *device, CL_PROGRAM_BUILD_STATUS, sizeof(build_status), (void *)&build_status, &len);
+        CHECK_ERR(err);
+        err = clGetProgramBuildInfo(program, *device, CL_PROGRAM_BUILD_LOG, sizeof(buffer), buffer, &len);
+        CHECK_ERR(err);
+        printf("Build Log:\n%s\n", buffer);
+        exit(1);
+    }
 
     /* Create OpenCL Kernel */
     *kernel = clCreateKernel(program, "sine_wave", &err);
@@ -245,10 +254,13 @@ void cl_run_kernel(cl_command_queue* command_queue, cl_kernel* kernel, cl_mem* v
     anim = (anim + 0.01);
     err = clSetKernelArg(*kernel, 3, sizeof(float), &anim);
     CHECK_ERR(err);
+
     err = clEnqueueNDRangeKernel(*command_queue, *kernel, 2, NULL, work, NULL, 0,0,0 );
     CHECK_ERR(err);
 
     err = clEnqueueReleaseGLObjects(*command_queue, 1, vbo_cl, 0,0,0);
     CHECK_ERR(err);
-    clFinish(*command_queue);
+
+    err = clFinish(*command_queue);
+    CHECK_ERR(err);
 }
