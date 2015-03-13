@@ -55,7 +55,7 @@ int ray_sphere(Ray* ray, Primitive* prim, float* t) {
 }
 
 int ray_trace(Ray* ray, Primitive* prims) {
-    const int num_prims = 4;
+    const int num_prims = 6;
     int hit = -1;
     float t = MAXFLOAT;
     for(int p = 0; p < num_prims; p++)
@@ -75,8 +75,13 @@ int ray_trace(Ray* ray, Primitive* prims) {
     // no intersections
     if (hit == -1) return 0;
 
+    // get the primitive we intersected
     Primitive* prim = prims + hit;
+
+    // calculate point of intersection
     float4 intersection = ray->origin + t * ray->dir;
+
+    // hack to get to primtive type from scale component
     int prim_type = (int)prim->scale.x;
     if(prim_type == PRIM_SPHERE)
     {
@@ -109,7 +114,7 @@ __kernel void sine_wave(__write_only image2d_t img, unsigned int width, unsigned
     ray.col = (float4)(0, 0, 0, 1.0f);
 
     // setup planes
-    Primitive prims[4];
+    Primitive prims[6];
 
     // dark purple floor
     prims[0].pos = (float4)(0,0,0,0);
@@ -134,6 +139,18 @@ __kernel void sine_wave(__write_only image2d_t img, unsigned int width, unsigned
     prims[3].col = (float4)(0.5f, 0, 0, 1.0f);
     prims[3].scale = (float4)(3.0f, 1.0f, 1.0f, PRIM_SPHERE);
     prims[3].normal = normalize((float4)(0, 0.1f, 1.0f, 0));
+
+    // red sphere
+    prims[4].pos = (float4)(-2.5f, 2.5f, 100.0f, 0);
+    prims[4].col = (float4)(0, 0.7f, 0, 1.0f);
+    prims[4].scale = (float4)(1.0f, 1.0f, 1.0f, PRIM_SPHERE);
+    prims[4].normal = normalize((float4)(0, 0.1f, 1.0f, 0));
+
+    // yellow sphere
+    prims[5].pos = (float4)(-5.0f, 0, 100.0f, 0);
+    prims[5].col = (float4)(0.5f, 0.5f, 0, 1.0f);
+    prims[5].scale = (float4)(4.0f, 1.0f, 1.0f, PRIM_SPHERE);
+    prims[5].normal = normalize((float4)(0, 0.1f, 1.0f, 0));
 
     ray_trace(&ray, &prims);
 

@@ -22,10 +22,10 @@
 using namespace glm;
 
 GLuint texture;
-unsigned int width = 256;
-unsigned int height = 256;
-const unsigned int window_width = 512;
-const unsigned int window_height = 512;
+unsigned int width = 1024;
+unsigned int height = 1024;
+const unsigned int window_width = width;
+const unsigned int window_height = height;
 
 // CL
 cl_mem texture_cl;
