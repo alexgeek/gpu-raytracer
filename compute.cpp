@@ -109,6 +109,9 @@ void cl_select(cl_platform_id* platform_id, cl_device_id* device_id) {
                         printf("Found Compatible platform %d and device %d out of %d .\n", i, d, num_devices);
                         *platform_id = platforms[i];
                         *device_id = devices[d];
+
+                        // TODO remove
+                        // break;
                     }
 
                     free(extensions);

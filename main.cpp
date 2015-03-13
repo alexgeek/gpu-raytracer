@@ -94,7 +94,7 @@ void init_gl()
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
-  glTranslatef(0.0, 0.0, -3.0);
+  glTranslatef(0.0, 0.0, -1.0);
 }
 
 
@@ -109,10 +109,10 @@ int main(void) {
   /*glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-  glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-  glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);*/
+  glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);*/
+  glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
-  window = glfwCreateWindow(window_width, window_height, "OpenGL Boilerplate", NULL, NULL);
+  window = glfwCreateWindow(window_width, window_height, "GPU Ray Tracer", NULL, NULL);
   if (!window) {
     glfwTerminate();
     exit(EXIT_FAILURE);
