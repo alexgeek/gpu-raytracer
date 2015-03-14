@@ -110,7 +110,7 @@ void cl_select(cl_platform_id* platform_id, cl_device_id* device_id) {
                         *platform_id = platforms[i];
                         *device_id = devices[d];
 
-                        // TODO remove
+                        // TODO remove. currently a toggle for intel/nvidia platform
                         // break;
                     }
 
@@ -213,7 +213,7 @@ void cl_load_kernel(cl_context* context, cl_device_id* device, const char* sourc
     }
 
     /* Create OpenCL Kernel */
-    *kernel = clCreateKernel(program, "sine_wave", &err);
+    *kernel = clCreateKernel(program, "pixel_kernel", &err);
     CHECK_ERR(err);
 }
 
@@ -242,7 +242,11 @@ void cl_create_texture(cl_context *context, GLuint *texture, cl_mem *cl_texture,
     //specify texture dimensions, format etc
     CHECK_GL(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0));
 
-    // create a CL buffer from the vbo
+    // this for 1.2 but even when linking with a 1.2 lib and platform it didnt seem to work
+    //*cl_texture = clCreateFromGLTexture(*context, CL_MEM_WRITE_ONLY, GL_TEXTURE_2D, 0, *texture, &err);
+
+    // this is for 1.1
+    // create a CL buffer that points to the GL texture
     *cl_texture = clCreateFromGLTexture2D(*context, CL_MEM_WRITE_ONLY, GL_TEXTURE_2D, 0, *texture, &err);
     CHECK_ERR(err);
 }

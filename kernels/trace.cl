@@ -97,7 +97,7 @@ int ray_trace(Ray* ray, Primitive* prims) {
     return 0;
 }
 
-__kernel void sine_wave(__write_only image2d_t img, unsigned int width, unsigned int height, float time)
+__kernel void pixel_kernel(__write_only image2d_t img, unsigned int width, unsigned int height, float time)
 {
     unsigned int x = get_global_id(0);
     unsigned int y = get_global_id(1);

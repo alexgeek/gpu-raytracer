@@ -22,8 +22,8 @@
 using namespace glm;
 
 GLuint texture;
-unsigned int width = 1024;
-unsigned int height = 1024;
+unsigned int width = 512;
+unsigned int height = 512;
 const unsigned int window_width = width;
 const unsigned int window_height = height;
 

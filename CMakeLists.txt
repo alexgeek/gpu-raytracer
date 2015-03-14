@@ -25,10 +25,8 @@ set(GLFW_INSTALL OFF CACHE BOOL "")
 
 add_subdirectory(${GLFW_SOURCE_DIR} ${GLEW_SOURCE_DIR})
 
-message(ERROR_FATAL ${CMAKE_SOURCE_DIR})
-
 include_directories(#${OPENCL_INCLUDE_DIRS}
-                    ${CMAKE_SOURCE_DIR}/include
+                    include
                     ${GLFW_SOURCE_DIR}/include
                     ${GLFW_SOURCE_DIR}/deps
                     ${GLM_SOURCE_DIR}

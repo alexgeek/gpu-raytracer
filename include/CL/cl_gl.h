@@ -21,6 +21,8 @@
  * MATERIALS OR THE USE OR OTHER DEALINGS IN THE MATERIALS.
  **********************************************************************************/
 
+/** MODIFIED BY ALEXANDER BROOK PERRY 14-03-2015 **/
+
 #ifndef __OPENCL_CL_GL_H
 #define __OPENCL_CL_GL_H
 
@@ -104,22 +106,23 @@ clEnqueueReleaseGLObjects(cl_command_queue      /* command_queue */,
                           cl_event *            /* event */) CL_API_SUFFIX__VERSION_1_0;
 
 
+// MODIFIED
 // Deprecated OpenCL 1.1 APIs
-extern CL_API_ENTRY CL_EXT_PREFIX__VERSION_1_1_DEPRECATED cl_mem CL_API_CALL
+extern CL_API_ENTRY cl_mem CL_API_CALL
 clCreateFromGLTexture2D(cl_context      /* context */,
                         cl_mem_flags    /* flags */,
                         cl_GLenum       /* target */,
                         cl_GLint        /* miplevel */,
                         cl_GLuint       /* texture */,
-                        cl_int *        /* errcode_ret */) CL_EXT_SUFFIX__VERSION_1_1_DEPRECATED;
-    
-extern CL_API_ENTRY CL_EXT_PREFIX__VERSION_1_1_DEPRECATED cl_mem CL_API_CALL
+                        cl_int *        /* errcode_ret */);
+
+extern CL_API_ENTRY cl_mem CL_API_CALL
 clCreateFromGLTexture3D(cl_context      /* context */,
                         cl_mem_flags    /* flags */,
                         cl_GLenum       /* target */,
                         cl_GLint        /* miplevel */,
                         cl_GLuint       /* texture */,
-                        cl_int *        /* errcode_ret */) CL_EXT_SUFFIX__VERSION_1_1_DEPRECATED;
+                        cl_int *        /* errcode_ret */);
     
 /* cl_khr_gl_sharing extension  */
     
