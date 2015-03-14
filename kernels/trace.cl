@@ -168,10 +168,10 @@ __kernel void pixel_kernel(__write_only image2d_t img, unsigned int width, unsig
     Primitive prims[10];
 
     // dark purple floor
-    prims[0].pos = (float4)(0,0,0,0);
+    prims[0].pos = (float4)(0,-.1f,0,0);
     prims[0].col = (float4)(0.5f, 0.5f, 0.1f, 1.0f);
     prims[0].scale = (float4)(1.0f, 1.0f, 1.0f, PRIM_PLANE);
-    prims[0].normal = fast_normalize((float4)(0, 20.0f, 0.0f, 0));
+    prims[0].normal = fast_normalize((float4)(0, 20.0f, -0.1f, 0));
 
     // green back wall1
     prims[1].pos = (float4)(0, 0, 100.0f, 0);
