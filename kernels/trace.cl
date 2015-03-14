@@ -18,9 +18,9 @@ typedef struct {
 #define PRIM_SPHERE 2
 
 int ray_plane(Ray* ray, Primitive* prim, float* t) {
-    float dp = dot(ray->dir, prim->normal);
+    const float dp = dot(ray->dir, prim->normal);
     if(dp == 0) return 0;
-    float d = dot(prim->normal, prim->pos - ray->origin) / dp;
+    const float d = dot(prim->normal, prim->pos - ray->origin) / dp;
     if(d > 0 && d < *t) *t = d;
     return *t >= 0;
 }
@@ -29,13 +29,13 @@ int ray_plane(Ray* ray, Primitive* prim, float* t) {
  * http://www.vis.uky.edu/~ryang/teaching/cs535-2012spr/Lectures/13-RayTracing-II.pdf
  */
 int ray_sphere(Ray* ray, Primitive* prim, float* t) {
-    float radius = prim->scale.x;
+    const float radius = prim->scale.x;
     // vector from origin to primitive
-    float4 v = prim->pos - ray->origin;
+    const float4 v = prim->pos - ray->origin;
     // compute dotproduct of ray and v
-    float dp = dot(ray->dir, v);
+    const float dp = dot(ray->dir, v);
     // b^2 -4ac
-    float det = dp*dp - dot(v, v) + radius*radius;
+    const float det = dp*dp - dot(v, v) + radius*radius;
     // no solutions to quadratic formula
     if(det <= 0) return false;
 
@@ -55,7 +55,7 @@ int ray_sphere(Ray* ray, Primitive* prim, float* t) {
 }
 
 int ray_trace(Ray* ray, Primitive* prims) {
-    const int num_prims = 6;
+    const int num_prims = 10;
     int hit = -1;
     float t = MAXFLOAT;
     for(int p = 0; p < num_prims; p++)
@@ -79,10 +79,10 @@ int ray_trace(Ray* ray, Primitive* prims) {
     Primitive* prim = prims + hit;
 
     // calculate point of intersection
-    float4 intersection = ray->origin + t * ray->dir;
+    const float4 intersection = ray->origin + t * ray->dir;
 
     // hack to get to primtive type from scale component
-    int prim_type = (int)prim->scale.x;
+    const int prim_type = (int)prim->scale.x;
     if(prim_type == PRIM_SPHERE)
     {
         float radius = prim->scale.x;
@@ -97,24 +97,34 @@ int ray_trace(Ray* ray, Primitive* prims) {
     return 0;
 }
 
+/**
+ * Calculates position of pixel in the world.
+ * Returns the aspect ratio.
+ */
+inline float calc_uv(float* u, float *v, unsigned int x, unsigned int y, unsigned int width, unsigned int height) {
+    const float ratio = (float)width / height;
+    // calculate uv coordinates
+    *u = ((x+0.5) - (width/2)) / (2 * width) * ratio;
+    *v = ((y+0.5) - (height/2)) / (2 * height);
+    return ratio;
+}
+
 __kernel void pixel_kernel(__write_only image2d_t img, unsigned int width, unsigned int height, float time)
 {
-    unsigned int x = get_global_id(0);
-    unsigned int y = get_global_id(1);
-    float ratio = (float)width / height;
+    const unsigned int x = get_global_id(0);
+    const unsigned int y = get_global_id(1);
 
-    // calculate uv coordinates
-    float u = ((x+0.5) - (width/2)) / (2.0f * width) * ratio;
-    float v = ((y+0.5) - (height/2)) / (2.0f * height) ;
+    float u, v;
+    calc_uv(&u, &v, x, y, width, height);
 
     // generate ray from camera position amd colour
     Ray ray;
-    ray.origin = -(float4)(0, 0, 0.95f , 0);
+    ray.origin = (float4)(0, 0, -0.95f , 0);
     ray.dir = fast_normalize((float4)(u, v, 0, 0) - ray.origin);
     ray.col = (float4)(0, 0, 0, 1.0f);
 
     // setup planes
-    Primitive prims[6];
+    Primitive prims[100];
 
     // dark purple floor
     prims[0].pos = (float4)(0,0,0,0);
@@ -140,18 +150,14 @@ __kernel void pixel_kernel(__write_only image2d_t img, unsigned int width, unsig
     prims[3].scale = (float4)(3.0f, 1.0f, 1.0f, PRIM_SPHERE);
     prims[3].normal = normalize((float4)(0, 0.1f, 1.0f, 0));
 
-    // red sphere
-    prims[4].pos = (float4)(-2.5f, 2.5f, 100.0f, 0);
-    prims[4].col = (float4)(0, 0.7f, 0, 1.0f);
-    prims[4].scale = (float4)(1.0f, 1.0f, 1.0f, PRIM_SPHERE);
-    prims[4].normal = normalize((float4)(0, 0.1f, 1.0f, 0));
-
-    // yellow sphere
-    prims[5].pos = (float4)(-5.0f, 0, 100.0f, 0);
-    prims[5].col = (float4)(0.5f, 0.5f, 0, 1.0f);
-    prims[5].scale = (float4)(4.0f, 1.0f, 1.0f, PRIM_SPHERE);
-    prims[5].normal = normalize((float4)(0, 0.1f, 1.0f, 0));
-
+    int i = 4;
+    for(;i<10;i++) {
+        // red sphere
+        prims[i].pos = (float4)(-2.5f*i+15.0f, 7.5f, 100.0f, 0);
+        prims[i].col = (float4)(0.1f, 0.1f*i, 1.0f-0.1fi, 1.0f);
+        prims[i].scale = (float4)(1.0f, 1.0f, 1.0f, PRIM_SPHERE);
+        prims[i].normal = normalize((float4)(0, 0.1f, 1.0f, 0));
+    }
     ray_trace(&ray, &prims);
 
     float4 col = ray.col;
