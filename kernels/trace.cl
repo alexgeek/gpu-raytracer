@@ -13,7 +13,7 @@ typedef struct {
 
 #define PRIM_TYPE(P) (int)((P).scale.w)
 #define RADIUS(P) P.scale.x
-#define SCALE(P) (float3)(P.scala.x, P.scale.y, P.scale.z)
+#define SCALE(P) (float3)(P.scale.x, P.scale.y, P.scale.z)
 #define PRIM_PLANE 1
 #define PRIM_SPHERE 2
 
@@ -21,8 +21,11 @@ int ray_plane(Ray* ray, Primitive* prim, float* t) {
     const float dp = dot(ray->dir, prim->normal);
     if(dp == 0) return 0;
     const float d = dot(prim->normal, prim->pos - ray->origin) / dp;
-    if(d > 0 && d < *t) *t = d;
-    return *t >= 0;
+    if(d > 0 && d < *t) {
+        *t = d;
+        return 1;
+    }
+    return 0;
 }
 
 /**
@@ -64,7 +67,10 @@ int ray_trace(Ray* ray, Primitive* prims) {
         switch(prim_type)
         {
             case PRIM_PLANE:
-                if(ray_plane(ray, &prims[p], &t)) hit = p;
+                if(ray_plane(ray, &prims[p], &t)) {
+                    hit = p;
+                }
+
                 break;
             case PRIM_SPHERE:
                 if(ray_sphere(ray, &prims[p], &t)) hit = p;
@@ -81,18 +87,41 @@ int ray_trace(Ray* ray, Primitive* prims) {
     // calculate point of intersection
     const float4 intersection = ray->origin + t * ray->dir;
 
+    const float4 light_pos = (float4)(0, 1.0f, -1.0f, 0);
+    const float4 light_col = (float4)(0, 0, 0.8f, 1.0f);
+
+    // calculate direction of light
+    const float4 light_dir = light_pos - intersection;
+
     // hack to get to primtive type from scale component
-    const int prim_type = (int)prim->scale.x;
+    const int prim_type = (int)prim->scale.w;
     if(prim_type == PRIM_SPHERE)
     {
         float radius = prim->scale.x;
         prim->normal = (intersection - prim->pos) * radius;
     }
+
+    // normally normalised
     prim->normal = normalize(prim->normal);
-    float dp = dot(prim->normal, prim->pos - intersection);
-    //if(dp > 0) ray->col += dp * prims[hit].col;
-    dp = max(0.0f, dp);
-    ray->col += dp * prims[hit].col;
+
+    // calculate a multiplier to the surface colour dependent on viewing angle
+    const float lambertian = max(dot(prim->normal, fast_normalize(light_dir)), 0.0f);
+
+    // add diffuse shading
+    ray->col += lambertian * prims[hit].col;
+
+    // add specular highlights
+
+    const float4 bisec = fast_normalize( light_dir + (prim->pos - intersection));
+
+    // specular exponent
+    const float alpha = 16.0f;
+
+    const float dp2 = pow( max(dot(bisec, prim->normal), 0.0f), alpha);
+
+    ray->col += dp2 * prim->col;
+
+    ray->col /= 2.0f;
 
     return 0;
 }
@@ -109,6 +138,21 @@ inline float calc_uv(float* u, float *v, unsigned int x, unsigned int y, unsigne
     return ratio;
 }
 
+/**
+ * Calculate ray from uv coordinates and focal length.
+ */
+inline Ray calc_ray(float focal, float4 uv, float4 col) {
+    Ray ray;
+    ray.origin = (float4)(0, 0, -focal , 0);    // distance of camera from image plane
+    ray.dir = fast_normalize(uv - ray.origin);  // from camera to image plane
+    ray.col = col;
+    return ray;
+}
+
+/**
+ * Entry point.
+ * Receives parameters and write only access to a GL texture.
+ */
 __kernel void pixel_kernel(__write_only image2d_t img, unsigned int width, unsigned int height, float time)
 {
     const unsigned int x = get_global_id(0);
@@ -118,25 +162,22 @@ __kernel void pixel_kernel(__write_only image2d_t img, unsigned int width, unsig
     calc_uv(&u, &v, x, y, width, height);
 
     // generate ray from camera position amd colour
-    Ray ray;
-    ray.origin = (float4)(0, 0, -0.95f , 0);
-    ray.dir = fast_normalize((float4)(u, v, 0, 0) - ray.origin);
-    ray.col = (float4)(0, 0, 0, 1.0f);
+    const Ray ray = calc_ray(0.95f, (float4)(u,v,0,0), (float4)(0, 0, 0, 1.0f));
 
     // setup planes
-    Primitive prims[100];
+    Primitive prims[10];
 
     // dark purple floor
     prims[0].pos = (float4)(0,0,0,0);
-    prims[0].col = (float4)(0.2f, 0, 0.2f, 1.0f);
+    prims[0].col = (float4)(0.5f, 0.5f, 0.1f, 1.0f);
     prims[0].scale = (float4)(1.0f, 1.0f, 1.0f, PRIM_PLANE);
-    prims[0].normal = normalize((float4)(0,1.0f,0,0));
+    prims[0].normal = fast_normalize((float4)(0, 20.0f, 0.0f, 0));
 
     // green back wall1
     prims[1].pos = (float4)(0, 0, 100.0f, 0);
     prims[1].col = (float4)(0,0,0,0); // (float4)(0.1f, 0.8f, 0.33f, 1.0f);
     prims[1].scale = (float4)(1.0f, 1.0f, 1.0f, PRIM_PLANE);
-    prims[1].normal = normalize((float4)(0, 0.1f, -1.0f, 0));
+    prims[1].normal = normalize((float4)(0, -0.1f, -1.0f, 0));
 
     // blue sphere
     prims[2].pos = (float4)(2.5f-time, 2.5f, 100.0f, 0);
@@ -152,12 +193,13 @@ __kernel void pixel_kernel(__write_only image2d_t img, unsigned int width, unsig
 
     int i = 4;
     for(;i<10;i++) {
-        // red sphere
+        // greeny bluey spheres
         prims[i].pos = (float4)(-2.5f*i+15.0f, 7.5f, 100.0f, 0);
         prims[i].col = (float4)(0.1f, 0.1f*i, 1.0f-0.1fi, 1.0f);
         prims[i].scale = (float4)(1.0f, 1.0f, 1.0f, PRIM_SPHERE);
         prims[i].normal = normalize((float4)(0, 0.1f, 1.0f, 0));
     }
+
     ray_trace(&ray, &prims);
 
     float4 col = ray.col;
@@ -165,4 +207,3 @@ __kernel void pixel_kernel(__write_only image2d_t img, unsigned int width, unsig
     col =  clamp(col, 0, 1.0f); // clamp [0, 1]
     write_imagef(img, (int2)(x, y), col);
 }
-
