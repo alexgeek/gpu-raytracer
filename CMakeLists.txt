@@ -1,11 +1,16 @@
 cmake_minimum_required(VERSION 2.8)
 project(tracer)
 
+set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+
+set(OpenCL_INCPATH "C:/Program Files (x86)/AMD APP SDK/2.9-1/include")
+set(OpenCL_LIBPATH "C:/Program Files (x86)/AMD APP SDK/2.9-1/lib")
+
 find_package(OpenCL)
-message(STATUS "OpenCL found: ${OPENCL_FOUND}")
-message(STATUS "OpenCL includes: ${OPENCL_INCLUDE_DIRS}")
-message(STATUS "OpenCL CXX includes: ${OPENCL_HAS_CPP_BINDINGS}")
-message(STATUS "OpenCL libraries: ${OPENCL_LIBRARIES}")
+message(WARNING "OpenCL found: ${OPENCL_FOUND}")
+message(WARNING "OpenCL includes: ${OPENCL_INCLUDE_DIRS}")
+message(WARNING "OpenCL CXX includes: ${OPENCL_HAS_CPP_BINDINGS}")
+message(WARNING "OpenCL libraries: ${OPENCL_LIBRARIES}")
 
 set(GLFW_SOURCE_DIR "external/glfw")
 set(GLM_SOURCE_DIR "external/glm")
@@ -20,7 +25,10 @@ set(GLFW_INSTALL OFF CACHE BOOL "")
 
 add_subdirectory(${GLFW_SOURCE_DIR} ${GLEW_SOURCE_DIR})
 
-include_directories(${OPENCL_INCLUDE_DIRS}
+message(ERROR_FATAL ${CMAKE_SOURCE_DIR})
+
+include_directories(#${OPENCL_INCLUDE_DIRS}
+                    ${CMAKE_SOURCE_DIR}/include
                     ${GLFW_SOURCE_DIR}/include
                     ${GLFW_SOURCE_DIR}/deps
                     ${GLM_SOURCE_DIR}
