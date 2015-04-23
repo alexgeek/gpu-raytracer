@@ -10,22 +10,38 @@
 #include <OpenCL/opencl.h>
 #else
 #include <CL/cl.h>
-#include <d3drm.h>
 
 #endif
 
 #define MEM_SIZE (128)
 #define MAX_SOURCE_SIZE (0x100000)
 
+#define FPS_ENABLED 1
+
 #include "compute.h"
 
 using namespace glm;
 
+double time = 0;
+#ifdef FPS_ENABLED
+double fps_update_time = 0;
+unsigned int frames = 0;
+#endif
+
 GLuint texture;
-unsigned int width = 512;
-unsigned int height = 512;
-const unsigned int window_width = width;
-const unsigned int window_height = height;
+
+//#define UPSAMPLE
+#ifndef UPSAMPLE
+unsigned int width = 1024;
+unsigned int height = 1024;
+unsigned int window_width = width;
+unsigned int window_height = height;
+#else
+unsigned int width = 1024;
+unsigned int height = 1024;
+unsigned int window_width = width/2;
+unsigned int window_height = height/2;
+#endif
 
 // CL
 cl_mem texture_cl;
@@ -45,7 +61,21 @@ static void key_callback(GLFWwindow *window, int key, int scancode, int action, 
 }
 
 static void render(GLFWwindow *window) {
-  // run the ray tracing kernel
+  const double current_time = glfwGetTime();
+  // const double time_delta = current_time - time;
+
+  #ifdef FPS_ENABLED
+  frames++;
+  if(current_time - fps_update_time >= 1.0) {
+    char title[64];
+    sprintf(title, "GPU RAY TRACER (%f FPS)", 1000.0f / frames);
+    glfwSetWindowTitle(window, title);
+    fps_update_time = current_time;
+    frames = 0;
+  }
+  #endif
+
+  /*** run the ray tracing kernel ***/
   cl_run_kernel(&command_queue, &kernel, &texture_cl, width, height);
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -64,6 +94,8 @@ static void render(GLFWwindow *window) {
   glTexCoord2f(0.0f, 1.0f);
   glVertex3f(-1.0f, 1.0f, 0.1f);
   glEnd();
+
+  time = current_time;
 }
 
 void glPerspective(double fov, double aspectRatio, double znear, double zfar)
@@ -111,12 +143,20 @@ int main(void) {
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);*/
   glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+  glfwWindowHint(GLFW_REFRESH_RATE, GLFW_DONT_CARE);
+
 
   window = glfwCreateWindow(window_width, window_height, "GPU Ray Tracer", NULL, NULL);
   if (!window) {
     glfwTerminate();
     exit(EXIT_FAILURE);
   }
+
+  GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+  const char* name = glfwGetMonitorName(monitor);
+  const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+  printf("%s (%d,%d,%d) %d Hz\n", name, mode->redBits, mode->greenBits, mode->blueBits, mode->refreshRate);
+
 
   glfwMakeContextCurrent(window);
 
