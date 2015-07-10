@@ -30,18 +30,11 @@ unsigned int frames = 0;
 
 GLuint texture;
 
-//#define UPSAMPLE
-#ifndef UPSAMPLE
-unsigned int width = 1024;
-unsigned int height = 1024;
+unsigned int width = 800;
+unsigned int height = 600;
 unsigned int window_width = width;
 unsigned int window_height = height;
-#else
-unsigned int width = 1024;
-unsigned int height = 1024;
-unsigned int window_width = width/2;
-unsigned int window_height = height/2;
-#endif
+
 
 // CL
 cl_mem texture_cl;

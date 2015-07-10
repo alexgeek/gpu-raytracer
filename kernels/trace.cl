@@ -9,6 +9,7 @@ typedef struct {
     float diffuse;
     float4 specular_col;
     float specular;
+    float reflect;
     float4 pos;
     float4 normal;
     float4 scale;
@@ -19,6 +20,7 @@ typedef struct {
 #define SCALE(P) (float3)(P.scale.x, P.scale.y, P.scale.z)
 #define PRIM_PLANE 1
 #define PRIM_SPHERE 2
+#define DELTA  0.001
 #define HIT 1
 #define MISS 0
 #define NONE -1
@@ -90,7 +92,7 @@ int shade(Ray* ray, Primitive* prim, float4 intersection) {
         // normally normalised
         prim->normal = normalize(prim->normal);
 
-        // calculate a multiplier to the surface colour dependent on viewing angle
+        // calculate dot product of direction from light and surface normal at intersect
         const float lambertian = max(dot(prim->normal, fast_normalize(light_dir)), 0.0f);
 
         // add diffuse shading
@@ -98,7 +100,7 @@ int shade(Ray* ray, Primitive* prim, float4 intersection) {
 
         // add specular highlights
 
-        const float4 bisec = fast_normalize(light_dir + (prim->pos - intersection));
+        const float4 bisec = fast_normalize(light_dir + ray->dir);
 
         // specular exponent
         const float alpha = 16.0f;
@@ -182,7 +184,6 @@ __kernel void pixel_kernel(__write_only image2d_t img, unsigned int width, unsig
     calc_uv(&u, &v, x, y, width, height);
 
     // generate ray from camera position amd colour
-    const Ray ray = calc_ray(0.95f, (float4)(u,v,0,0), (float4)(0, 0, 0, 1.0f));
 
     // setup planes
     Primitive prims[10];
@@ -195,6 +196,7 @@ __kernel void pixel_kernel(__write_only image2d_t img, unsigned int width, unsig
     prims[0].specular = 0.2f;
     prims[0].scale = (float4)(1.0f, 1.0f, 1.0f, PRIM_PLANE);
     prims[0].normal = fast_normalize((float4)(0, 20.0f, -0.1f, 0));
+    prims[0].reflect = 0;
 
     // 232323 (the new black) wall
     prims[1].pos = (float4)(0, 0, 50.0f, 0);
@@ -204,6 +206,8 @@ __kernel void pixel_kernel(__write_only image2d_t img, unsigned int width, unsig
     prims[1].specular = 0.2f;
     prims[1].scale = (float4)(1.0f, 1.0f, 1.0f, PRIM_PLANE);
     prims[1].normal = normalize((float4)(0.2f, -0.2f, -0.9f, 0));
+    prims[1].reflect = 0;
+
 
     // FF9A0C (sun drums) sphere
     prims[2].pos = (float4)(2.5f-time, 2.5f, 100.0f, 0);
@@ -213,32 +217,43 @@ __kernel void pixel_kernel(__write_only image2d_t img, unsigned int width, unsig
     prims[2].specular = 0.95f;
     prims[2].scale = (float4)(1.0f, 1.0f, 1.0f, PRIM_SPHERE);
     prims[2].normal = normalize((float4)(0, 0.1f, 1.0f, 0));
+    prims[2].reflect = 0.2f;
+
 
     // FA7339 (casa) sphere
-    prims[3].pos = (float4)(5.0f*cos(time*10.0f), 0, 50.0f+10.0f*sin(time*10.0f), 0);
+    prims[3].pos = (float4)(5.0f*cos(time*10.0f), 1.0f, 50.0f+10.0f*sin(time*10.0f), 0);
     prims[3].diffuse_col = (float4)(250.0f, 115.0f, 57.0f, 255.0f) / 255.0f;
     prims[3].diffuse = 0.7f;
     //prims[3].specular_col = (float4)(24.0f, 185.0f, 209.0f, 255.0f) / 255.0f;
     prims[3].specular_col = (float4)(255.0f, 185.0f, 209.0f, 255.0f) / 255.0f;
     prims[3].specular = 0.9f;
-    prims[3].scale = (float4)(3.0f, 1.0f, 1.0f, PRIM_SPHERE);
+    prims[3].scale = (float4)(2.0f, 1.0f, 1.0f, PRIM_SPHERE);
     prims[3].normal = normalize((float4)(0, 0.1f, 1.0f, 0));
+    prims[3].reflect = 0.5f;
 
     int i = 4;
     for(;i<10;i++) {
         // 18CEDB (blue lagoon) spheres
-        prims[i].pos = (float4)(-1.5f*i+15.0f, .5f, -2.5f*i+100.0f, 0);
+        prims[i].pos = (float4)(-1.5f*i+8.0f, .5f, -2.5f*i+60.0f, 0);
         prims[i].diffuse_col = (float4)(24.0f, 200.0f, 213.0f, 255.0f) / 255.0f;
         prims[i].diffuse = 0.6f;
         prims[i].specular_col = (float4)(24.0f, 190.0f, 210.0f, 255.0f) / 255.0f;
         prims[i].specular = 1.0f;
         prims[i].scale = (float4)(1.0f, 1.0f, 1.0f, PRIM_SPHERE);
         prims[i].normal = normalize((float4)(0, 0.1f, 1.0f, 0));
+        prims[i].reflect = 1.0f;
     }
 
-    ray_trace(&ray, &prims);
+    float4 col = (float4)(0,0,0,1.0f);
+    for(int i = -1; i < 1; i++) {
+        for(int j = -1; j < 1; j++) {
+            const Ray ray = calc_ray(0.95f, (float4)(u+i*DELTA,v+j*DELTA,0,0), (float4)(0, 0, 0, 1.0f));
+            ray_trace(&ray, &prims);
+            col += ray.col / 9.0f;
+        }
+    }
 
-    float4 col = ray.col;
+    //float4 col = ray.col;
     col =  clamp(col, 0, 1.0f);
 
     // write pixel data to gpu
